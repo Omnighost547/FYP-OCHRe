@@ -7,7 +7,10 @@
 
 
 namespace tgc {
-    enum packetType {TEST, POOR_SIGNAL, HEART_RATE, ATTENTION, MEDITATION, RAW_8BIT_WAVE, RAW_MARKER};
+    enum packetType {
+        POOR_SIGNAL, HEART_RATE, ATTENTION, MEDITATION, RAW_8BIT_WAVE, RAW_MARKER, // single bytes
+        RAW_WAVE, EEG_POWER, ASIC_EEG_POWER,RRINTERVAL
+    };
 
     class ThinkGearPacket {
     public:

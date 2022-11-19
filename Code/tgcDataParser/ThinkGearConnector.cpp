@@ -64,19 +64,53 @@ namespace tgc {
         }
 
         code = lastPayload[bytesParsed++];
+        // https://developer.neurosky.com/docs/doku.php?id=thinkgear_communications_protocol#code_definitions_table
         switch (code) {
             case POOR_SIGNAL_BYTE:
                 packet->type = POOR_SIGNAL;
                 packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+                break;
             case HEART_RATE_BYTE:
                 packet->type = HEART_RATE;
                 packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+                break;
             case ATTENTION_BYTE:
                 packet->type = ATTENTION;
                 packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+                break;
             case MEDITATION_BYTE:
                 packet->type = MEDITATION;
                 packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+                break;
+            case RAW_8BIT_WAVE_BYTE:
+                packet->type = RAW_8BIT_WAVE;
+                packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+                break;
+            case RAM_MARKER_BYTE:
+                packet->type = RAW_MARKER;
+                packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+                break;
+            // multi byte stuff
+            case RAW_WAVE_BYTE:
+                packet->type = RAW_WAVE;
+                // TODO IMPLEMENT
+                bytesParsed+=2;
+                break;
+            case EEG_POWER_BYTE:
+                packet->type = EEG_POWER;
+                // TODO IMPLEMENT
+                bytesParsed+=32;
+                break;
+            case ASIC_EEG_POWER_BYTE:
+                packet->type = ASIC_EEG_POWER;
+                bytesParsed+=24;
+                // TODO IMPLEMENT
+                break;
+            case RRINTERVAL_BYTE:
+                packet->type = RRINTERVAL;
+                // TODO IMPLEMENT
+                bytesParsed+=2;
+                break;
 
             default:
                 printf("Unknown data code 0x%02hhx\n", code);

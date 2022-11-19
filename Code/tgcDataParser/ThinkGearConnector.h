@@ -25,12 +25,20 @@ namespace tgc {
         vector<byte> lastPayload;
         unsigned int bytesParsed;
         static const byte SYNC{0xAA};
+
+        // Data Codes
+        // Single Bytes
         static const byte POOR_SIGNAL_BYTE{0x02};
         static const byte HEART_RATE_BYTE{0x03};
         static const byte ATTENTION_BYTE{0x04};
         static const byte MEDITATION_BYTE {0x05};
-        static const byte RAW_8BIT_WAVE_BYTE{ 0x06};
-        static const byte RAM_MARKER_BYTE {0x07};
+        static const byte RAW_8BIT_WAVE_BYTE{0x06};
+        static const byte RAM_MARKER_BYTE{0x07};
+        // Multi bytes
+        static const byte RAW_WAVE_BYTE{0x80};
+        static const byte EEG_POWER_BYTE{0x81};
+        static const byte ASIC_EEG_POWER_BYTE{0x83};
+        static const byte RRINTERVAL_BYTE{0x86};
 
         /**
          * read next packet form the device, verify it and return result
