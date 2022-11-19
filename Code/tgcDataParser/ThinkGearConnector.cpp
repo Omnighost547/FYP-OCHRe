@@ -5,63 +5,84 @@
 #include "ThinkGearPacket.h"
 
 using namespace boost::asio;
+using namespace std;
 
 namespace tgc {
     ThinkGearConnector::ThinkGearConnector(std::string port, unsigned int baud_rate) : io(), serial(io, port) {
         serial.set_option(serial_port_base::baud_rate(baud_rate));
-        packetLength = 0;
         bytesParsed = 0;
+
     }
 
     int ThinkGearConnector::readPayload() {
-        unsigned char charBuffer;
-        unsigned char localPacketLength;
-        unsigned char checksum;
-        unsigned char payloadBuffer[256];
+        byte charBuffer;
+        int localPacketLength;
+        int checksum;
+        vector<byte> payloadBuffer;
 
         // synchronise on 2 in a row SYNC packets
         while (true) {
             read(serial, buffer(&charBuffer, 1));
-            if (charBuffer != SYNCbyte) continue;
+            if (charBuffer != SYNC) continue;
             read(serial, buffer(&charBuffer , 1));
-            if (charBuffer != SYNCbyte) continue; else break;
+            if (charBuffer != SYNC) continue; else break;
         }
 
         // parse PLENGTH
         read(serial, buffer(&charBuffer,1));
-        if (charBuffer > 169) return 1;
-        localPacketLength = charBuffer;
+        if (to_integer<unsigned char>(charBuffer) > 169) return 1;
+        localPacketLength = to_integer<int>(charBuffer);
 
         // read the number of bytes equal to PLENGTH
-        read(serial, buffer(payloadBuffer, charBuffer));
+        payloadBuffer.clear();
+        payloadBuffer.resize(localPacketLength);
+        read(serial, buffer(payloadBuffer));
 
         //calculate and verify checksum
         checksum = 0;
-        for(auto i=0; i < localPacketLength; i++ ) checksum += payloadBuffer[i];
+        for(auto i=0; i < localPacketLength; i++ ) checksum += to_integer<char>(payloadBuffer[i]);
         checksum &= 0xFF;
         checksum = ~checksum & 0xFF;
 
         read(serial, buffer(&charBuffer, 1));
-        if (charBuffer != checksum) return 2;
+        if (to_integer<int>(charBuffer) != checksum) return 2;
 
 
-        // all is good, set payload, localPacketLength class variables and return
-        this->packetLength = localPacketLength;
-        std::copy(payloadBuffer, payloadBuffer + localPacketLength , this->lastPayload);
+        lastPayload = payloadBuffer;
         return 0;
     }
 
     int ThinkGearConnector::getLatestPacket(ThinkGearPacket* packet) {
+        byte code;
+        
+        if (packet == nullptr) return -1;
         // all data points in the payload were parsed, fetch more data
-        if (bytesParsed >= packetLength){
+        if (bytesParsed >= lastPayload.size()){
             int retval = readPayload();
             if (retval > 0) return retval;
             bytesParsed = 0;
         }
 
-        switch () {
-            
-        }
+        code = lastPayload[bytesParsed++];
+        switch (code) {
+            case POOR_SIGNAL_BYTE:
+                packet->type = POOR_SIGNAL;
+                packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+            case HEART_RATE_BYTE:
+                packet->type = HEART_RATE;
+                packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+            case ATTENTION_BYTE:
+                packet->type = ATTENTION;
+                packet->value = to_integer<int>(lastPayload[bytesParsed++]);
+            case MEDITATION_BYTE:
+                packet->type = MEDITATION;
+                packet->value = to_integer<int>(lastPayload[bytesParsed++]);
 
+            default:
+                printf("Unknown data code 0x%02hhx\n", code);
+                // discard the next value since we don't know what to do with it anyway
+                bytesParsed++;
+        }
+        return 0;
     }
 }

@@ -7,15 +7,16 @@
 
 
 namespace tgc {
-    enum packetType {TEST, POOR_SIGNAL, HEART_RATE, ATTENTION, MEDITATION,};
+    enum packetType {TEST, POOR_SIGNAL, HEART_RATE, ATTENTION, MEDITATION, RAW_8BIT_WAVE, RAW_MARKER};
 
     class ThinkGearPacket {
     public:
         friend class ThinkGearConnector;
         packetType getPacketType();
-
+        int getValue() const;
     private:
         packetType type;
+        int value;
     };
 
 } // tgc

@@ -14,11 +14,10 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < 10; ++i) {
 
             cout << "read payload returned: " << serial.readPayload() << endl;
-            cout << "len" << (int) serial.packetLength << endl;
+            cout << "len" << (int) serial.lastPayload.size() << endl;
 
-            printf("memcopied: ");
-            for (int j = 0; j < serial.packetLength; ++j) {
-                printf("%02hhx ", serial.lastPayload[j]);
+            for (auto &byts : serial.lastPayload) {
+                printf("%02hhx ", byts);
             }
             cout << endl;
             cout << "==========================" << endl;
