@@ -3,4 +3,4 @@ project(tgcDataParser)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(tgcDataParser main.cpp ThinkGearConnector.h ThinkGearConnector.cpp)
+add_executable(tgcDataParser main.cpp ThinkGearConnector.h ThinkGearConnector.cpp ThinkGearPacket.cpp ThinkGearPacket.h)

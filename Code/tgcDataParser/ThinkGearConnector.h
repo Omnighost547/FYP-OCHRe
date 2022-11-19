@@ -5,6 +5,7 @@
 #ifndef TGCDATAPARSER_THINKGEARCONNECTOR_H
 #define TGCDATAPARSER_THINKGEARCONNECTOR_H
 #include <boost/asio.hpp>
+#include "ThinkGearPacket.h"
 namespace tgc {
     class ThinkGearConnector {
     public:
@@ -17,18 +18,19 @@ namespace tgc {
          */
         ThinkGearConnector(std::string port, unsigned int baud_rate);
 
-
 //    private:
         boost::asio::io_service io;
         boost::asio::serial_port serial;
         unsigned char lastPayload[256];
         unsigned char packetLength;
+        unsigned char bytesParsed;
         const unsigned char SYNCbyte= 0xAA;
         /**
          * read next packet form the device, verify it and return result
          * \return 0 if success, 1 if packet too long, 2 if checksum verification failed
          * sets lastPayload and packetLength
          */
+        int getLatestPacket(ThinkGearPacket* packet);
         int readPayload();
     };
 }
