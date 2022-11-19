@@ -17,15 +17,6 @@ namespace tgc {
          */
         ThinkGearConnector(std::string port, unsigned int baud_rate);
 
-        /**
-         * Write a string to the serial device.
-         * \param s string to write
-         * \throws boost::system::system_error on failure
-         */
-        void writeString(std::string s);
-
-        int readPayload();
-
 
 //    private:
         boost::asio::io_service io;
@@ -33,6 +24,12 @@ namespace tgc {
         unsigned char lastPayload[256];
         unsigned char packetLength;
         const unsigned char SYNCbyte= 0xAA;
+        /**
+         * read next packet form the device, verify it and return result
+         * \return 0 if success, 1 if packet too long, 2 if checksum verification failed
+         * sets lastPayload and packetLength
+         */
+        int readPayload();
     };
 }
 #endif //TGCDATAPARSER_THINKGEARCONNECTOR_H
