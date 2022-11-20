@@ -8,11 +8,13 @@ using namespace boost::asio;
 using namespace std;
 
 namespace tgc {
-    ThinkGearConnector::ThinkGearConnector(std::string port, unsigned int baud_rate) : io(), serial(io, port) {
-        serial.set_option(serial_port_base::baud_rate(baud_rate));
+    ThinkGearConnector::ThinkGearConnector(std::string port, unsigned int baud_rate) : context(), service(context, port) {
+        service.set_option(serial_port_base::baud_rate(baud_rate));
         bytesParsed = 0;
-
     }
+//    ThinkGearConnector::ThinkGearConnector(std::string path) {
+
+//    }
 
     int ThinkGearConnector::readPayload() {
         byte charBuffer;
@@ -22,21 +24,21 @@ namespace tgc {
 
         // synchronise on 2 in a row SYNC packets
         while (true) {
-            read(serial, buffer(&charBuffer, 1));
+            read(service, buffer(&charBuffer, 1));
             if (charBuffer != SYNC) continue;
-            read(serial, buffer(&charBuffer , 1));
+            read(service, buffer(&charBuffer , 1));
             if (charBuffer != SYNC) continue; else break;
         }
 
         // parse PLENGTH
-        read(serial, buffer(&charBuffer,1));
+        read(service, buffer(&charBuffer, 1));
         if (to_integer<unsigned char>(charBuffer) > 169) return 1;
         localPacketLength = to_integer<int>(charBuffer);
 
         // read the number of bytes equal to PLENGTH
         payloadBuffer.clear();
         payloadBuffer.resize(localPacketLength);
-        read(serial, buffer(payloadBuffer));
+        read(service, buffer(payloadBuffer));
 
         //calculate and verify checksum
         checksum = 0;
@@ -44,11 +46,15 @@ namespace tgc {
         checksum &= 0xFF;
         checksum = ~checksum & 0xFF;
 
-        read(serial, buffer(&charBuffer, 1));
+        read(service, buffer(&charBuffer, 1));
         if (to_integer<int>(charBuffer) != checksum) return 2;
 
 
         lastPayload = payloadBuffer;
+        for (auto &i: lastPayload){
+
+            printf("%02hhx ", i);
+        }
         return 0;
     }
 
@@ -58,8 +64,7 @@ namespace tgc {
         if (packet == nullptr) return -1;
         // all data points in the payload were parsed, fetch more data
         if (bytesParsed >= lastPayload.size()){
-            int retval = readPayload();
-            if (retval > 0) return retval;
+            if (int retval = readPayload(); retval > 0) return retval;
             bytesParsed = 0;
         }
 
@@ -119,4 +124,5 @@ namespace tgc {
         }
         return 0;
     }
+
 }

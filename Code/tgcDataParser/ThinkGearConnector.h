@@ -15,13 +15,14 @@ namespace tgc {
          * \param port device name, example "/dev/ttyUSB0" or "COM4"
          * \param baud_rate communication speed, example 9600 or 115200
          * \throws boost::system::system_error if cannot open the
-         * serial device
+         * service device
          */
         ThinkGearConnector(std::string port, unsigned int baud_rate);
+//        explicit ThinkGearConnector(std::string path);
 
 //    private:
-        boost::asio::io_service io;
-        boost::asio::serial_port serial;
+        boost::asio::io_context context;
+        boost::asio::serial_port service;
         vector<byte> lastPayload;
         unsigned int bytesParsed;
         static const byte SYNC{0xAA};
