@@ -8,11 +8,14 @@ using namespace boost::asio;
 using namespace std;
 
 namespace tgc {
-    ThinkGearConnector::ThinkGearConnector(std::string port, unsigned int baud_rate) : context(), service(context, port) {
-        service.set_option(serial_port_base::baud_rate(baud_rate));
-        bytesParsed = 0;
+//    ThinkGearConnector::ThinkGearConnector(std::string port, unsigned int baud_rate) : context(), service(context, port) {
+//        service.set_option(serial_port_base::baud_rate(baud_rate));
+//        bytesParsed = 0;
+//    }
+
+    ThinkGearConnector::ThinkGearConnector(const std::string& filePath) : context(),  service(context, filePath, boost::asio::stream_file::read_only) {
+    bytesParsed = 0;
     }
-//    ThinkGearConnector::ThinkGearConnector(std::string path) {
 
 //    }
 
@@ -49,16 +52,17 @@ namespace tgc {
         read(service, buffer(&charBuffer, 1));
         if (to_integer<int>(charBuffer) != checksum) return 2;
 
-
         lastPayload = payloadBuffer;
+        // reverse(lastPayload.begin(), lastPayload.end());
+        printf("extracted payload: ");
         for (auto &i: lastPayload){
-
             printf("%02hhx ", i);
         }
+        printf("\n");
         return 0;
     }
 
-    int ThinkGearConnector::getLatestPacket(ThinkGearPacket* packet) {
+    int ThinkGearConnector::nextDataPoint(ThinkGearPacket* packet) {
         byte code;
         
         if (packet == nullptr) return -1;
@@ -99,6 +103,10 @@ namespace tgc {
             case RAW_WAVE_BYTE:
                 packet->type = RAW_WAVE;
                 // TODO IMPLEMENT
+////                packet->value =
+//                byte byte1 = lastPayload[bytesParsed+1];
+//                byte byte2 = lastPayload[bytesParsed+2];
+
                 bytesParsed+=2;
                 break;
             case EEG_POWER_BYTE:
@@ -121,8 +129,10 @@ namespace tgc {
                 printf("Unknown data code 0x%02hhx\n", code);
                 // discard the next value since we don't know what to do with it anyway
                 bytesParsed++;
+                return 1;
         }
         return 0;
     }
+
 
 }

@@ -2,9 +2,14 @@
 // Created by tommy on 18/11/22.
 //
 
+#define BOOST_ASIO_HAS_FILE  // enable boost file support
+#define BOOST_ASIO_HAS_IO_URING // io_uring on linux for async file access
+
+
 #ifndef TGCDATAPARSER_THINKGEARCONNECTOR_H
 #define TGCDATAPARSER_THINKGEARCONNECTOR_H
 #include <boost/asio.hpp>
+#include <fstream>
 #include "ThinkGearPacket.h"
 using namespace std;
 namespace tgc {
@@ -17,12 +22,17 @@ namespace tgc {
          * \throws boost::system::system_error if cannot open the
          * service device
          */
-        ThinkGearConnector(std::string port, unsigned int baud_rate);
-//        explicit ThinkGearConnector(std::string path);
+         // todo fix the serial constructor
+//        ThinkGearConnector(std::string port, unsigned int baud_rate);
+        explicit ThinkGearConnector(const std::string& filePath);
 
 //    private:
         boost::asio::io_context context;
-        boost::asio::serial_port service;
+
+//        boost::asio::serial_port service;
+        // todo find a type that can store both stream_file and serial_port
+        boost::asio::stream_file service;
+        // todo investigate replacing with std::deque
         vector<byte> lastPayload;
         unsigned int bytesParsed;
         static const byte SYNC{0xAA};
@@ -52,7 +62,7 @@ namespace tgc {
          *
          * sets lastPayload and packetLength
          */
-        int getLatestPacket(ThinkGearPacket* packet);
+        int nextDataPoint(ThinkGearPacket* packet);
         int readPayload();
     };
 }

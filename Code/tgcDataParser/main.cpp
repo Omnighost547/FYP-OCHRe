@@ -8,15 +8,15 @@ using namespace tgc;
 
 int main(int argc, char *argv[]) {
     try {
-        ThinkGearConnector serial("/dev/rfcomm0", 115200);
+        ThinkGearConnector serial("C:\\tools\\thedata");
 
         for (int i = 0; i < 10; ++i) {
             ThinkGearPacket p{};
-            if (int retval = serial.getLatestPacket(&p); retval >0 ){
+            if (int retval = serial.nextDataPoint(&p); retval != 0 ){
                 cout << "packet parse failed with " << retval << endl;
                 continue;
             }
-            cout << "packet: " << p.getPacketType() << "value: " << p.getValue() << endl;
+            cout << "packetType: " << p.getPacketType() << " value: " << p.getValue() << endl;
         }
     } catch (boost::system::system_error &e) {
         cout << "Error: " << e.what() << endl;
